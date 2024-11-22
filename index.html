@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Overlay Widget</title>
+</head>
+<body>
+    <h1>Overlay Widget Test</h1>
+    <div id="overlay-container"></div>
+
+    <script>
+        async function loadOverlay() {
+            try {
+                const response = await fetch("http://localhost:8000/api/overlay");
+                if (!response.ok) {
+                    throw new Error("Network response was not ok " + response.statusText);
+                }
+
+                // Parsing JSON response
+                const overlayData = await response.json();
+
+                // Log the data to verify structure
+                console.log("Received overlay data:", overlayData);
+
+                // Access the first item (assuming a single overlay for this test)
+                const overlay = overlayData[0];
+                
+                if (overlay) {
+                    console.log("Received media type:", overlay.mediaType);
+                    
+                    // Check for media type
+                    if (overlay.mediaType === "gif" || overlay.mediaType === "image" || overlay.mediaType === "video") {
+                        const overlayElement = document.createElement("div");
+                        overlayElement.style.position = "absolute";
+                        overlayElement.style.width = overlay.dimensions.width;
+                        overlayElement.style.height = overlay.dimensions.height;
+                        overlayElement.style.top = overlay.dimensions.top;
+                        overlayElement.style.left = overlay.dimensions.left;
+                        overlayElement.style.opacity = overlay.opacity;
+
+                        // Check media type to display correctly
+                        if (overlay.mediaType === "gif" || overlay.mediaType === "image") {
+                            const img = document.createElement("img");
+                            img.src = overlay.image_url;
+                            img.style.width = "100%";
+                            img.style.height = "100%";
+                            overlayElement.appendChild(img);
+                        } else if (overlay.mediaType === "video") {
+                            const video = document.createElement("video");
+                            video.src = overlay.image_url;
+                            video.autoplay = true;
+                            video.loop = true;
+                            video.style.width = "100%";
+                            video.style.height = "100%";
+                            overlayElement.appendChild(video);
+                        }
+
+                        document.getElementById("overlay-container").appendChild(overlayElement);
+                    } else {
+                        console.log("Unsupported media type:", overlay.mediaType);
+                    }
+                }
+            } catch (error) {
+                console.error("Failed to load overlay:", error);
+            }
+        }
+
+        loadOverlay();
+    </script>
+</body>
+</html>
